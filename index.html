@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sneha Sliding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              serif: ['"Playfair Display"', 'serif'],
+            },
+            colors: {
+              aluminium: {
+                50: '#eff6ff', // Blue 50
+                100: '#dbeafe', // Blue 100
+                500: '#3b82f6', // Blue 500
+                600: '#2563eb', // Blue 600
+                800: '#1e40af', // Blue 800
+                900: '#1e3a8a', // Blue 900
+              },
+              painting: {
+                50: '#faf5ff', // Purple 50
+                100: '#f3e8ff', // Purple 100
+                500: '#a855f7', // Purple 500
+                600: '#9333ea', // Purple 600
+                800: '#6b21a8', // Purple 800
+                900: '#581c87', // Purple 900
+              }
+            },
+            boxShadow: {
+              'glow-slate': '0 0 20px rgba(59, 130, 246, 0.3)', // Blue glow
+              'glow-orange': '0 0 20px rgba(147, 51, 234, 0.3)', // Purple glow
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom scrollbar for gallery */
+      .hide-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
