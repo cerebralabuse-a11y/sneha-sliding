@@ -19,9 +19,12 @@ const GallerySection: React.FC = () => {
 
   useEffect(() => {
     // Load items
-    const data = getGalleryPosts();
-    setItems(data);
-    setFilter(mode); 
+    const fetchData = async () => {
+      const data = await getGalleryPosts();
+      setItems(data);
+      setFilter(mode);
+    };
+    fetchData();
   }, [mode]);
 
   useEffect(() => {

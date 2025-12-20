@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AUTHORS, GalleryItem, ServiceMode, Enquiry } from '../types';
-import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost } from '../utils/storage';
+import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage } from '../utils/storage';
 import { Trash2, ArrowLeft, LogOut } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -25,9 +25,11 @@ const Admin: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  const refreshData = () => {
-    setPosts(getGalleryPosts());
-    setEnquiries(getEnquiries());
+  const refreshData = async () => {
+    const postsData = await getGalleryPosts();
+    const enquiriesData = await getEnquiries();
+    setPosts(postsData);
+    setEnquiries(enquiriesData);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -39,33 +41,35 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleImageUpload = (file: File | null) => {
+  const handleImageUpload = async (file: File | null) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImageUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    
+    // Upload to Supabase Storage
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      setImageUrl(imageUrl);
+    } else {
+      alert('Failed to upload image. Please try again.');
+    }
   };
 
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageUrl) {
       alert('Please upload an image before submitting.');
       return;
     }
-    const newPost: GalleryItem = {
-      id: Date.now().toString(),
+    const newPost = {
       title,
       category,
       author,
       imageUrl,
-      type: 'image',
-      date: new Date().toLocaleDateString(),
+      type: 'image' as const,
+      date: new Date().toISOString(),
       description: desc
     };
-    addGalleryPost(newPost);
-    refreshData();
+    await addGalleryPost(newPost);
+    await refreshData();
     // Reset Form
     setTitle('');
     setImageUrl('');
@@ -73,10 +77,10 @@ const Admin: React.FC = () => {
     alert('Post added successfully!');
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this post?')) {
-      deleteGalleryPost(id);
-      refreshData();
+      await deleteGalleryPost(id);
+      await refreshData();
     }
   };
 
@@ -160,8 +164,13 @@ const Admin: React.FC = () => {
                   <input
                     required
                     type="file"
-                    accept="image/*"
-                    onChange={e => handleImageUpload(e.target.files?.[0] || null)}
+                    accept="image/*,video/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        await handleImageUpload(file);
+                      }
+                    }}
                     className="w-full border p-2 rounded bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                   <p className="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, WEBP (max few MB).</p>
