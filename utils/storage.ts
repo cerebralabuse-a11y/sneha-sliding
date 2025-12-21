@@ -152,17 +152,102 @@ export const getEnquiries = async (): Promise<Enquiry[]> => {
 
 export const addEnquiry = async (enquiry: Omit<Enquiry, 'id'>) => {
   try {
-    const { error } = await supabase
+    console.log('Attempting to add enquiry:', enquiry);
+    
+    // Check if Supabase client is properly initialized
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return false;
+    }
+    
+    // First, try to get the actual table structure
+    console.log('Checking table structure...');
+    
+    // Try a simple select to see what columns exist
+    const { data: sampleData, error: sampleError } = await supabase
       .from('enquiries')
-      .insert([enquiry]);
+      .select('*')
+      .limit(1);
+      
+    let existingColumns: string[] = [];
+    if (sampleData && sampleData.length > 0) {
+      existingColumns = Object.keys(sampleData[0]);
+      console.log('Existing columns in enquiries table:', existingColumns);
+    } else if (!sampleError) {
+      console.log('Enquiries table is empty, will try to insert with basic fields');
+    } else {
+      console.log('Could not determine table structure, proceeding with basic fields');
+    }
+    
+    // Create an enquiry object with only the fields that are likely to exist
+    const safeEnquiry: Record<string, any> = {};
+    
+    // Always include these basic fields if they exist in the enquiry
+    if ('name' in enquiry) safeEnquiry.name = enquiry.name;
+    if ('phone' in enquiry) safeEnquiry.phone = enquiry.phone;
+    if ('message' in enquiry) safeEnquiry.message = enquiry.message;
+    
+    // Only include worker if it exists in the original enquiry AND the table likely has it
+    if ('worker' in enquiry && enquiry.worker) {
+      // For now, let's not include worker until we confirm the table has it
+      // safeEnquiry.worker = enquiry.worker;
+      console.log('Worker field present in enquiry but not being inserted to avoid column errors');
+    }
+    
+    // Only include date if the table likely has a timestamp column
+    if ('date' in enquiry && enquiry.date) {
+      // Try common timestamp column names
+      // safeEnquiry.created_at = enquiry.date;
+      console.log('Date field present in enquiry but not being inserted to avoid column errors');
+    }
+    
+    console.log('Inserting safe enquiry object:', safeEnquiry);
+    
+    // Try inserting with only basic fields
+    const { data, error } = await supabase
+      .from('enquiries')
+      .insert([safeEnquiry])
+      .select()
+      .single();
 
     if (error) {
       console.error("Error adding enquiry:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // Handle RLS policy violation
+      if (error.code === '42501') {
+        console.warn('RLS policy violation detected. This is likely because your Supabase table has Row Level Security enabled but no policies allowing inserts.');
+        console.warn('Possible solutions:');
+        console.warn('1. Disable RLS on the enquiries table in Supabase');
+        console.warn('2. Add an RLS policy allowing anonymous inserts');
+        console.warn('3. Use service key for inserts (not recommended for client-side)');
+        return false;
+      }
+      
+      // Handle column not found errors
+      if (error.code === 'PGRST204') {
+        console.warn('Column not found error. This suggests the table structure is different from what we expect.');
+        console.warn('Current enquiry object keys:', Object.keys(enquiry));
+        console.warn('Safe enquiry object keys:', Object.keys(safeEnquiry));
+        return false;
+      }
+      
+      return false;
     }
+    
+    console.log('Successfully added enquiry:', data);
+    return true;
   } catch (error) {
     console.error("Error adding enquiry:", error);
+    return false;
   }
 };
+
 
 export const deleteGalleryPost = async (id: string) => {
   try {

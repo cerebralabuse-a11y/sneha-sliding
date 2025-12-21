@@ -76,17 +76,24 @@ const Home: React.FC = () => {
     : "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp";
   
   // --- Contact Form State ---
-  const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', message: '', worker: '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'success'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addEnquiry({
+    const success = await addEnquiry({
       ...formData,
-      date: new Date().toISOString()
+      // Only include date if your table supports it
+      // date: new Date().toISOString()
     });
-    setFormStatus('success');
-    setFormData({ name: '', phone: '', message: '' });
+    
+    if (success) {
+      setFormStatus('success');
+      setFormData({ name: '', phone: '', message: '', worker: '' });
+    } else {
+      alert('Failed to submit enquiry. Please check the console for details.');
+    }
+    
     setTimeout(() => setFormStatus('idle'), 3000);
   };
 
@@ -273,7 +280,14 @@ const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm text-white/60 font-bold uppercase tracking-wider mb-1">Call Us</p>
-                    <p className="font-sans text-2xl font-bold">+91 93229 32329</p>
+                    {isAlu ? (
+                                          <p className="font-sans text-2xl font-bold">+91 93229 32329</p>
+                                        ) : (
+                                          <div className="space-y-2">
+                                            <p className="font-sans text-2xl font-bold">+91 98334 51763 (Manoj Soni)</p>
+                                            <p className="font-sans text-2xl font-bold">+91 98207 19496 (Santosh Soni)</p>
+                                          </div>
+                                        )}
                   </div>
                 </div>
                 <div className="flex items-start gap-6 group">
@@ -323,6 +337,20 @@ const Home: React.FC = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Worker</label>
+                  <select
+                    value={formData.worker}
+                    onChange={e => setFormData({...formData, worker: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                    required
+                  >
+                    <option value="">Choose a worker</option>
+                    <option value="Shankar Soni">Shankar Soni</option>
+                    <option value="Manoj Soni">Manoj Soni</option>
+                    <option value="Santosh Soni">Santosh Soni</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Message</label>
                   <textarea 
                     rows={4} 
@@ -351,8 +379,12 @@ const Home: React.FC = () => {
         </div>
         <p className="mb-6">&copy; {new Date().getFullYear()} Sneha Sliding & Interiors. All rights reserved.</p>
         <div className="flex justify-center gap-6 mb-8">
-            <a href="#" className="hover:text-white transition-colors"><Instagram size={20} /></a>
-            <a href="#" className="hover:text-white transition-colors"><Facebook size={20} /></a>
+            <a href="https://www.instagram.com/shankar.soni.311?igsh=cnpnOGtwd3BqZTB6" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <Instagram size={20} />
+            </a>
+            <a href="https://www.facebook.com/share/16hL2gSP4p/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              <Facebook size={20} />
+            </a>
         </div>
         <a href="#/admin" className="inline-block text-xs font-bold uppercase tracking-widest hover:text-white transition-colors border border-gray-700 px-4 py-2 rounded hover:border-gray-500">Admin Login</a>
       </footer>
