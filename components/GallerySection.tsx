@@ -11,7 +11,22 @@ const GallerySection: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'aluminium' | 'painting'>('all');
   const [authorFilter, setAuthorFilter] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Helper function to format dates
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+  
   // Colors
   const textColor = mode === 'aluminium' ? 'text-blue-900' : 'text-purple-900';
   const accentColor = mode === 'aluminium' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white';
@@ -20,9 +35,18 @@ const GallerySection: React.FC = () => {
   useEffect(() => {
     // Load items
     const fetchData = async () => {
-      const data = await getGalleryPosts();
-      setItems(data);
-      setFilter(mode);
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getGalleryPosts();
+        setItems(data);
+        setFilter(mode);
+      } catch (err) {
+        console.error('Error fetching gallery posts:', err);
+        setError('Failed to load gallery items. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [mode]);
@@ -90,39 +114,69 @@ const GallerySection: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredItems.map(item => (
-          <div 
-            key={item.id} 
-            onClick={() => openLightbox(item)}
-            className="group relative cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 bg-white border border-gray-100 hover:border-transparent hover:-translate-y-2"
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-20">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-600">Loading gallery items...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-20 text-red-500 bg-white rounded-3xl border border-dashed border-red-200">
+          <p className="text-lg mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
-            <div className="aspect-[4/3] overflow-hidden">
-              <img 
-                src={item.imageUrl} 
-                alt={item.title} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white">
-                  <ZoomIn size={24} />
+            Retry
+          </button>
+        </div>
+      )}
+      
+      {/* Grid */}
+      {!loading && !error && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredItems.map(item => (
+            <div 
+              key={item.id} 
+              onClick={() => openLightbox(item)}
+              className="group relative cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 bg-white border border-gray-100 hover:border-transparent hover:-translate-y-2"
+            >
+              <div className="aspect-[4/3] overflow-hidden">
+                <img 
+                  src={item.imageUrl} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    // Handle broken images
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found';
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white">
+                    <ZoomIn size={24} />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-3">
-                <span className={`text-[10px] font-bold px-3 py-1 rounded-full text-white uppercase tracking-wider ${item.category === 'aluminium' ? 'bg-blue-600' : 'bg-purple-600'}`}>
-                  {item.category}
-                </span>
-                <span className="text-xs font-medium text-gray-400">{item.date}</span>
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full text-white uppercase tracking-wider ${item.category === 'aluminium' ? 'bg-blue-600' : 'bg-purple-600'}`}>
+                    {item.category}
+                  </span>
+                  <span className="text-xs font-medium text-gray-400">{formatDate(item.date)}</span>
+                </div>
+                <h3 className="font-serif font-bold text-xl mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">{item.title}</h3>
+                <p className="text-sm text-gray-500 font-medium">by {item.author}</p>
               </div>
-              <h3 className="font-serif font-bold text-xl mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">{item.title}</h3>
-              <p className="text-sm text-gray-500 font-medium">by {item.author}</p>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       
       {filteredItems.length === 0 && (
         <div className="text-center py-20 text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
@@ -149,6 +203,11 @@ const GallerySection: React.FC = () => {
                   src={selectedItem.imageUrl} 
                   alt={selectedItem.title} 
                   className="max-h-[60vh] md:max-h-[80vh] w-full object-contain rounded-xl shadow-2xl bg-black"
+                  onError={(e) => {
+                    // Handle broken images
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found';
+                  }}
                 />
               )}
             </div>
@@ -168,7 +227,7 @@ const GallerySection: React.FC = () => {
                 </div>
                 <div>
                   <span className="block text-gray-500 text-xs uppercase font-bold mb-1">Date</span>
-                  <span className="font-medium text-white">{selectedItem.date}</span>
+                  <span className="font-medium text-white">{formatDate(selectedItem.date)}</span>
                 </div>
               </div>
             </div>

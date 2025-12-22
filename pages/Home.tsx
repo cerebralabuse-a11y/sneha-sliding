@@ -244,9 +244,9 @@ const Home: React.FC = () => {
             
             <div className="grid md:grid-cols-3 gap-10">
               {[
-                { name: 'Shankar Soni', role: 'Head Technician', bio: 'Master of fabrication with 25+ years experience.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
-                { name: 'Manoj soni', role: 'Design & Paint Lead', bio: 'Expert in texture, color theory and finishes.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
-                { name: 'Santosh Soni', role: 'Operations Manager', bio: 'Ensures seamless service and happy customers.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600' }
+                { name: 'Shankar Soni', role: 'Aluminum work', bio: 'Master of fabrication with 25+ years experience.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
+                { name: 'Manoj soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
+                { name: 'Santosh Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600' }
               ].map((member, i) => (
                 <div key={i} className="group cursor-default">
                   <div className="relative overflow-hidden rounded-3xl mb-6 shadow-md aspect-[4/5]">
