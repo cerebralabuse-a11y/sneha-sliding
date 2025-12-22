@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AUTHORS, GalleryItem, ServiceMode, Enquiry } from '../types';
+import { AUTHORS, GalleryItem, ServiceMode, Enquiry, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
 import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage } from '../utils/storage';
 import { Trash2, ArrowLeft, LogOut } from 'lucide-react';
 
@@ -11,6 +11,7 @@ const Admin: React.FC = () => {
   // New Post State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<ServiceMode>('aluminium');
+  const [service, setService] = useState('');
   const [author, setAuthor] = useState(AUTHORS[0]);
   const [imageUrl, setImageUrl] = useState('');
   const [desc, setDesc] = useState('');
@@ -37,7 +38,7 @@ const Admin: React.FC = () => {
   const refreshData = async () => {
     const postsData = await getGalleryPosts();
     setPosts(postsData);
-    
+
     // Fetch enquiries with loading states
     if (activeTab === 'enquiries') {
       setLoadingEnquiries(true);
@@ -68,7 +69,7 @@ const Admin: React.FC = () => {
 
   const handleImageUpload = async (file: File | null) => {
     if (!file) return;
-    
+
     // Upload to Supabase Storage
     const imageUrl = await uploadImage(file);
     if (imageUrl) {
@@ -87,6 +88,7 @@ const Admin: React.FC = () => {
     const newPost = {
       title,
       category,
+      service,
       author,
       imageUrl,
       type: 'image' as const,
@@ -99,6 +101,7 @@ const Admin: React.FC = () => {
     setTitle('');
     setImageUrl('');
     setDesc('');
+    setService('');
     alert('Post added successfully!');
   };
 
@@ -150,7 +153,7 @@ const Admin: React.FC = () => {
           <a href="#/" className="text-gray-500 hover:text-black"><ArrowLeft size={20} /></a>
           <h1 className="text-xl font-bold">Sneha Sliding Admin</h1>
         </div>
-        <button 
+        <button
           onClick={() => setIsAuthenticated(false)}
           className="text-red-600 flex items-center gap-2 hover:bg-red-50 px-3 py-1 rounded-md"
         >
@@ -160,13 +163,13 @@ const Admin: React.FC = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex gap-4 mb-8">
-          <button 
+          <button
             onClick={() => setActiveTab('posts')}
             className={`px-6 py-2 rounded-full font-medium ${activeTab === 'posts' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
           >
             Manage Gallery
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('enquiries')}
             className={`px-6 py-2 rounded-full font-medium ${activeTab === 'enquiries' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
           >
@@ -208,11 +211,32 @@ const Admin: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Category</label>
-                  <select value={category} onChange={e => setCategory(e.target.value as ServiceMode)} className="w-full border p-2 rounded">
+                  <select value={category} onChange={e => {
+                    setCategory(e.target.value as ServiceMode);
+                    setService(''); // Reset service when category changes
+                  }} className="w-full border p-2 rounded">
                     <option value="aluminium">Aluminium</option>
                     <option value="painting">Painting</option>
                   </select>
                 </div>
+
+                {/* Dynamic Service Type Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Service Type</label>
+                  <select value={service} onChange={e => setService(e.target.value)} className="w-full border p-2 rounded" required>
+                    <option value="">Select Service...</option>
+                    {category === 'aluminium' ? (
+                      INITIAL_ALUMINIUM_SERVICES.map(s => (
+                        <option key={s.title} value={s.title}>{s.title}</option>
+                      ))
+                    ) : (
+                      INITIAL_PAINTING_SERVICES.map(s => (
+                        <option key={s.title} value={s.title}>{s.title}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Author</label>
                   <select value={author} onChange={e => setAuthor(e.target.value)} className="w-full border p-2 rounded">
@@ -235,6 +259,7 @@ const Admin: React.FC = () => {
                     <tr>
                       <th className="p-4">Image</th>
                       <th className="p-4">Title</th>
+                      <th className="p-4">Service</th>
                       <th className="p-4">Category</th>
                       <th className="p-4">Action</th>
                     </tr>
@@ -246,6 +271,7 @@ const Admin: React.FC = () => {
                           <img src={post.imageUrl} alt="" className="w-12 h-12 object-cover rounded" />
                         </td>
                         <td className="p-4 font-medium">{post.title}</td>
+                        <td className="p-4 text-sm text-gray-500">{post.service || '-'}</td>
                         <td className="p-4">
                           <span className={`text-xs px-2 py-1 rounded ${post.category === 'aluminium' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
                             {post.category}
@@ -258,7 +284,7 @@ const Admin: React.FC = () => {
                         </td>
                       </tr>
                     ))}
-                    {posts.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-gray-500">No posts yet.</td></tr>}
+                    {posts.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-500">No posts yet.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -272,7 +298,7 @@ const Admin: React.FC = () => {
               <h2 className="text-lg font-bold">Customer Enquiries</h2>
               <p className="text-sm text-gray-500">View all customer inquiries submitted through the website</p>
             </div>
-            
+
             {loadingEnquiries ? (
               <div className="p-8 text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
@@ -281,7 +307,7 @@ const Admin: React.FC = () => {
             ) : enquiriesError ? (
               <div className="p-8 text-center">
                 <p className="text-red-500 mb-2">{enquiriesError}</p>
-                <button 
+                <button
                   onClick={refreshData}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
@@ -322,7 +348,7 @@ const Admin: React.FC = () => {
                     )}
                   </tbody>
                 </table>
-                
+
                 {enquiries.length > 0 && (
                   <div className="p-4 bg-gray-50 border-t text-sm text-gray-500">
                     Showing {enquiries.length} enquiry(s)

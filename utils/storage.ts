@@ -333,16 +333,25 @@ export const deleteGalleryPost = async (id: string) => {
 // Upload image to Supabase Storage
 export const uploadImage = async (file: File): Promise<string | null> => {
   try {
+    if (!file) {
+      console.error("No file provided for upload");
+      return null;
+    }
+
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    // Use timestamp and random string for safer, unique filenames
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
     const filePath = `${fileName}`;
+
+    console.log(`Attempting to upload file: ${filePath}`);
 
     const { error: uploadError } = await supabase.storage
       .from('gallery-images')
       .upload(filePath, file);
 
     if (uploadError) {
-      console.error('Error uploading image:', uploadError);
+      console.error('Error uploading image to storage bucket:', uploadError);
+      // If the bucket doesn't exist, this error will be descriptive
       return null;
     }
 
@@ -351,9 +360,15 @@ export const uploadImage = async (file: File): Promise<string | null> => {
       .from('gallery-images')
       .getPublicUrl(filePath);
 
+    if (!data.publicUrl) {
+      console.error("Failed to retrieve public URL after upload");
+      return null;
+    }
+
+    console.log("Image uploaded successfully:", data.publicUrl);
     return data.publicUrl;
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.error('Unexpected error in uploadImage:', error);
     return null;
   }
 };
