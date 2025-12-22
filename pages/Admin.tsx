@@ -18,6 +18,8 @@ const Admin: React.FC = () => {
   // Data Lists
   const [posts, setPosts] = useState<GalleryItem[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [loadingEnquiries, setLoadingEnquiries] = useState(false);
+  const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -25,11 +27,34 @@ const Admin: React.FC = () => {
     }
   }, [isAuthenticated]);
 
+  // Refresh enquiries when switching to the enquiries tab
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'enquiries') {
+      refreshData();
+    }
+  }, [isAuthenticated, activeTab]);
+
   const refreshData = async () => {
     const postsData = await getGalleryPosts();
-    const enquiriesData = await getEnquiries();
     setPosts(postsData);
-    setEnquiries(enquiriesData);
+    
+    // Fetch enquiries with loading states
+    if (activeTab === 'enquiries') {
+      setLoadingEnquiries(true);
+      setEnquiriesError(null);
+      try {
+        const enquiriesData = await getEnquiries();
+        setEnquiries(enquiriesData);
+        if (enquiriesData.length === 0) {
+          setEnquiriesError('No enquiries found in the database');
+        }
+      } catch (error) {
+        console.error('Error fetching enquiries:', error);
+        setEnquiriesError('Failed to fetch enquiries. Please check the console for details.');
+      } finally {
+        setLoadingEnquiries(false);
+      }
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -243,27 +268,68 @@ const Admin: React.FC = () => {
 
         {activeTab === 'enquiries' && (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Phone</th>
-                  <th className="p-4">Message</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {enquiries.map((enq, idx) => (
-                  <tr key={idx}>
-                    <td className="p-4 whitespace-nowrap text-gray-500 text-sm">{enq.date}</td>
-                    <td className="p-4 font-bold">{enq.name}</td>
-                    <td className="p-4 text-blue-600">{enq.phone}</td>
-                    <td className="p-4 text-gray-600 max-w-xs">{enq.message}</td>
-                  </tr>
-                ))}
-                 {enquiries.length === 0 && <tr><td colSpan={4} className="p-4 text-center text-gray-500">No enquiries received yet.</td></tr>}
-              </tbody>
-            </table>
+            <div className="p-4 border-b">
+              <h2 className="text-lg font-bold">Customer Enquiries</h2>
+              <p className="text-sm text-gray-500">View all customer inquiries submitted through the website</p>
+            </div>
+            
+            {loadingEnquiries ? (
+              <div className="p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                <p>Loading enquiries...</p>
+              </div>
+            ) : enquiriesError ? (
+              <div className="p-8 text-center">
+                <p className="text-red-500 mb-2">{enquiriesError}</p>
+                <button 
+                  onClick={refreshData}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <>
+                <table className="w-full text-left">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="p-4">Date</th>
+                      <th className="p-4">Name</th>
+                      <th className="p-4">Phone</th>
+                      <th className="p-4">Worker</th>
+                      <th className="p-4">Message</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {enquiries.map((enq, idx) => (
+                      <tr key={enq.id || idx}>
+                        <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
+                          {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
+                        <td className="p-4 text-blue-600">{enq.phone || 'N/A'}</td>
+                        <td className="p-4">{enq.worker || 'Not specified'}</td>
+                        <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
+                      </tr>
+                    ))}
+                    {enquiries.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-gray-500">
+                          <p>No enquiries received yet.</p>
+                          <p className="text-sm mt-2">Customer enquiries will appear here once submitted through the website.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                
+                {enquiries.length > 0 && (
+                  <div className="p-4 bg-gray-50 border-t text-sm text-gray-500">
+                    Showing {enquiries.length} enquiry(s)
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

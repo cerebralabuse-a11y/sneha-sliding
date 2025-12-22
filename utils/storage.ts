@@ -133,17 +133,83 @@ export const addGalleryPost = async (post: Omit<GalleryItem, 'id'>) => {
 
 export const getEnquiries = async (): Promise<Enquiry[]> => {
   try {
-    const { data, error } = await supabase
+    console.log('Fetching enquiries from Supabase...');
+    
+    // First, let's check what columns exist in the table
+    const { data: sampleData, error: sampleError } = await supabase
       .from('enquiries')
       .select('*')
-      .order('date', { ascending: false });
+      .limit(1);
+      
+    if (sampleError) {
+      console.error("Error checking table structure:", sampleError);
+    } else if (sampleData && sampleData.length > 0) {
+      console.log('Available columns in enquiries table:', Object.keys(sampleData[0]));
+    }
+    
+    // Try to fetch enquiries with various ordering options
+    let data: any[] | null = null;
+    let error: any = null;
+    
+    // Try ordering by created_at first (common timestamp column)
+    const result1 = await supabase
+      .from('enquiries')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+      
+    if (result1.error) {
+      console.log('Failed to order by created_at, trying date column...');
+      
+      // Try ordering by date column
+      const result2 = await supabase
+        .from('enquiries')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(100);
+        
+      if (result2.error) {
+        console.log('Failed to order by date, trying without specific ordering...');
+        
+        // Try without specific ordering
+        const result3 = await supabase
+          .from('enquiries')
+          .select('*')
+          .limit(100);
+          
+        data = result3.data;
+        error = result3.error;
+      } else {
+        data = result2.data;
+        error = result2.error;
+      }
+    } else {
+      data = result1.data;
+      error = result1.error;
+    }
 
     if (error) {
       console.error("Error fetching enquiries:", error);
       return [];
     }
-
-    return data as Enquiry[];
+    
+    console.log(`Successfully fetched ${data?.length || 0} enquiries`);
+    
+    // Transform the data to match our Enquiry interface
+    if (data && data.length > 0) {
+      const transformedData: Enquiry[] = data.map(item => ({
+        id: item.id || '',
+        name: item.name || '',
+        phone: item.phone || '',
+        message: item.message || '',
+        worker: item.worker || item.Worker || '', // Handle case variations
+        date: item.date || item.created_at || item.Date || '' // Handle different timestamp fields
+      }));
+      
+      return transformedData;
+    }
+    
+    return [];
   } catch (error) {
     console.error("Error fetching enquiries:", error);
     return [];
