@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../App';
 import { INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
-import { ToggleLeft, ToggleRight, Phone, Mail, MapPin, ArrowRight, CheckCircle2, Instagram, Facebook } from 'lucide-react';
+import { ToggleLeft, ToggleRight, Phone, Mail, MapPin, ArrowRight, CheckCircle2, Instagram, Facebook, Menu, X } from 'lucide-react';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import GallerySection from '../components/GallerySection';
 import { addEnquiry } from '../utils/storage';
@@ -10,6 +10,7 @@ const Navbar: React.FC = () => {
   const { mode, toggleMode } = useTheme();
   const isAlu = mode === 'aluminium';
   const [scrolled, setScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -17,40 +18,80 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Text colors based on state
+  const textColor = scrolled ? 'text-gray-900' : 'text-white';
+  const navLinkColor = scrolled ? 'text-gray-600 hover:text-black' : 'text-white/90 hover:text-white';
+  const mobileMenuBg = 'bg-white/95 backdrop-blur-xl';
+
   return (
-    <nav className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 px-2 md:px-4`}>
-      <div className={`max-w-7xl mx-auto rounded-full transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3 px-4 md:px-6' : 'bg-transparent py-4 px-4'}`}>
+    <nav className={`fixed top-0 md:top-4 left-0 right-0 z-50 transition-all duration-300 md:px-4`}>
+      <div className={`max-w-7xl mx-auto md:rounded-full transition-all duration-300 ${scrolled || isMenuOpen ? 'bg-white/90 backdrop-blur-md shadow-lg py-3 px-4 md:px-6' : 'bg-transparent py-4 px-4'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg ${isAlu ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-purple-600 to-purple-700'}`}>
               <span className="text-lg">S</span>
             </div>
-            <span className={`font-sans text-xl font-bold tracking-tight ${scrolled ? 'text-gray-900' : 'text-white drop-shadow-md'}`}>
+            <span className={`font-sans text-xl font-bold tracking-tight ${scrolled || isMenuOpen ? 'text-gray-900' : 'text-white drop-shadow-md'}`}>
               Sneha Sliding<span className="opacity-70">.</span>
             </span>
           </div>
 
+          {/* Desktop Nav */}
           <div className="flex items-center gap-6">
-            <div className={`hidden md:flex gap-8 text-sm font-semibold tracking-wide ${scrolled ? 'text-gray-600' : 'text-white/90'}`}>
-              <a href="#services" className="hover:text-current transition-opacity hover:opacity-70">Services</a>
-              <a href="#gallery" className="hover:text-current transition-opacity hover:opacity-70">Work</a>
-              <a href="#about" className="hover:text-current transition-opacity hover:opacity-70">About</a>
-              <a href="#contact" className="hover:text-current transition-opacity hover:opacity-70">Contact</a>
+            <div className={`hidden md:flex gap-8 text-sm font-semibold tracking-wide ${navLinkColor}`}>
+              <a href="#services" className="transition-opacity">Services</a>
+              <a href="#gallery" className="transition-opacity">Work</a>
+              <a href="#about" className="transition-opacity">About</a>
+              <a href="#contact" className="transition-opacity">Contact</a>
             </div>
 
-            <button
-              onClick={toggleMode}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all hover:scale-105 active:scale-95 ${isAlu
-                ? 'bg-white text-blue-700 border-blue-100'
-                : 'bg-white text-purple-700 border-purple-100'
-                }`}
-            >
-              {isAlu ? <ToggleLeft size={18} /> : <ToggleRight size={18} />}
-              <span className="text-xs font-bold uppercase tracking-wider">{mode === 'aluminium' ? 'Glass Work' : 'Interior'}</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleMode}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all hover:scale-105 active:scale-95 ${isAlu
+                  ? 'bg-white text-blue-700 border-blue-100'
+                  : 'bg-white text-purple-700 border-purple-100'
+                  }`}
+              >
+                {isAlu ? <ToggleLeft size={18} /> : <ToggleRight size={18} />}
+                <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline">{mode === 'aluminium' ? 'Glass Work' : 'Interior'}</span>
+              </button>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`md:hidden p-2 rounded-full transition-colors ${scrolled || isMenuOpen ? 'text-gray-800 hover:bg-gray-100' : 'text-white hover:bg-white/20'}`}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className={`md:hidden absolute top-full left-0 right-0 p-4 animate-in slide-in-from-top-5 fade-in duration-200`}>
+          <div className={`${mobileMenuBg} rounded-2xl shadow-2xl border border-gray-100 overflow-hidden`}>
+            <div className="flex flex-col p-2">
+              {['Services', 'Work', 'About', 'Contact'].map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-6 py-4 text-gray-800 font-bold hover:bg-gray-50 rounded-xl transition-colors flex justify-between items-center group"
+                >
+                  {item}
+                  <ArrowRight size={16} className="opacity-0 group-hover:opacity-50 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                </a>
+              ))}
+            </div>
+            <div className="bg-gray-50 p-4 text-center text-xs text-gray-400 font-medium">
+              Sneha Sliding & Interiors
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
@@ -107,13 +148,13 @@ const Home: React.FC = () => {
           <div className={`absolute inset-0 bg-gradient-to-r ${isAlu ? 'from-blue-900/90 via-blue-900/70 to-blue-900/20' : 'from-purple-900/90 via-purple-900/70 to-purple-900/20'}`} />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-20">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-24 md:pt-32">
           <div className="max-w-3xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
             <div className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full text-xs font-bold tracking-widest text-white border border-white/20 backdrop-blur-sm uppercase`}>
               <span className={`w-2 h-2 rounded-full ${isAlu ? 'bg-blue-400' : 'bg-purple-400'}`}></span>
               {isAlu ? 'Premium Glass & Sliding Systems' : 'Creative Interior & Paint'}
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-8 leading-[1.1] tracking-tight">
               {isAlu ? <>Sneha <span className="text-blue-300">Sliding</span></> : <>Sneha <span className="text-purple-300">Interiors</span></>}
             </h1>
             <p className="text-lg md:text-xl text-gray-100 mb-10 max-w-xl leading-relaxed font-light">
