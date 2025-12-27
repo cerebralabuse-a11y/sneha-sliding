@@ -320,39 +320,71 @@ const Admin: React.FC = () => {
             {/* List Posts */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="p-4">Image</th>
-                      <th className="p-4">Title</th>
-                      <th className="p-4">Service</th>
-                      <th className="p-4">Category</th>
-                      <th className="p-4">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {posts.map(post => (
-                      <tr key={post.id}>
-                        <td className="p-4">
-                          <img src={post.imageUrl} alt="" className="w-12 h-12 object-cover rounded" />
-                        </td>
-                        <td className="p-4 font-medium">{post.title}</td>
-                        <td className="p-4 text-sm text-gray-500">{post.service || '-'}</td>
-                        <td className="p-4">
-                          <span className={`text-xs px-2 py-1 rounded ${post.category === 'aluminium' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                            {post.category}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <button onClick={() => handleDelete(post.id)} className="text-red-500 hover:text-red-700">
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="p-4">Image</th>
+                        <th className="p-4">Title</th>
+                        <th className="p-4">Service</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4">Action</th>
                       </tr>
-                    ))}
-                    {posts.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-500">No posts yet.</td></tr>}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y">
+                      {posts.map(post => (
+                        <tr key={post.id}>
+                          <td className="p-4">
+                            <img src={post.imageUrl} alt="" className="w-12 h-12 object-cover rounded" />
+                          </td>
+                          <td className="p-4 font-medium">{post.title}</td>
+                          <td className="p-4 text-sm text-gray-500">{post.service || '-'}</td>
+                          <td className="p-4">
+                            <span className={`text-xs px-2 py-1 rounded ${post.category === 'aluminium' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                              {post.category}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <button onClick={() => handleDelete(post.id)} className="text-red-500 hover:text-red-700">
+                              <Trash2 size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {posts.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-500">No posts yet.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4 p-4">
+                  {posts.map(post => (
+                    <div key={post.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex gap-4 items-start">
+                      <img src={post.imageUrl} alt="" className="w-20 h-20 object-cover rounded-md shrink-0 bg-white" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-gray-900 truncate pr-2">{post.title}</h3>
+                          <button
+                            onClick={() => handleDelete(post.id)}
+                            className="text-red-500 hover:text-red-700 bg-white p-1.5 rounded shadow-sm border border-gray-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2 truncate">{post.service || 'No service specified'}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded font-medium uppercase tracking-wide ${post.category === 'aluminium' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                          {post.category}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {posts.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No posts found.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -384,38 +416,77 @@ const Admin: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b">
-                      <tr>
-                        <th className="p-4">Date</th>
-                        <th className="p-4">Name</th>
-                        <th className="p-4">Phone</th>
-                        <th className="p-4">Worker</th>
-                        <th className="p-4">Message</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {enquiries.map((enq, idx) => (
-                        <tr key={enq.id || idx}>
-                          <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
-                            {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
-                          </td>
-                          <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
-                          <td className="p-4 text-blue-600">{enq.phone || 'N/A'}</td>
-                          <td className="p-4">{enq.worker || 'Not specified'}</td>
-                          <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
-                        </tr>
-                      ))}
-                      {enquiries.length === 0 && (
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-gray-50 border-b">
                         <tr>
-                          <td colSpan={5} className="p-8 text-center text-gray-500">
-                            <p>No enquiries received yet.</p>
-                            <p className="text-sm mt-2">Customer enquiries will appear here once submitted through the website.</p>
-                          </td>
+                          <th className="p-4">Date</th>
+                          <th className="p-4">Name</th>
+                          <th className="p-4">Phone</th>
+                          <th className="p-4">Worker</th>
+                          <th className="p-4">Message</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y">
+                        {enquiries.map((enq, idx) => (
+                          <tr key={enq.id || idx}>
+                            <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
+                              {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
+                            </td>
+                            <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
+                            <td className="p-4 text-blue-600">
+                              <a href={`tel:${enq.phone}`}>{enq.phone || 'N/A'}</a>
+                            </td>
+                            <td className="p-4">{enq.worker || 'Not specified'}</td>
+                            <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
+                          </tr>
+                        ))}
+                        {enquiries.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-gray-500">
+                              <p>No enquiries received yet.</p>
+                              <p className="text-sm mt-2">Customer enquiries will appear here once submitted through the website.</p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden space-y-4 p-4">
+                    {enquiries.map((enq, idx) => (
+                      <div key={enq.id || idx} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="text-xs text-gray-500 block mb-1">
+                              {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
+                            </span>
+                            <h3 className="font-bold text-lg">{enq.name || 'N/A'}</h3>
+                          </div>
+                          {enq.worker && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              {enq.worker}
+                            </span>
+                          )}
+                        </div>
+
+                        <a href={`tel:${enq.phone}`} className="text-blue-600 font-medium block mb-3 flex items-center gap-2">
+                          <span>📞</span> {enq.phone || 'N/A'}
+                        </a>
+
+                        <div className="bg-white p-3 rounded border border-gray-100 text-sm text-gray-600">
+                          {enq.message || 'No message'}
+                        </div>
+                      </div>
+                    ))}
+                    {enquiries.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        No enquiries yet.
+                      </div>
+                    )}
+                  </div>
 
                   {enquiries.length > 0 && (
                     <div className="p-4 bg-gray-50 border-t text-sm text-gray-500">
