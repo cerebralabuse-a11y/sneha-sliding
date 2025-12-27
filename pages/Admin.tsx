@@ -198,37 +198,37 @@ const Admin: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Admin Nav */}
-      <nav className="bg-white border-b px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <nav className="bg-white border-b px-4 py-3 md:px-6 md:py-4 flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center gap-3 md:gap-4">
           <a href="#/" className="text-gray-500 hover:text-black"><ArrowLeft size={20} /></a>
-          <h1 className="text-xl font-bold">Sneha Sliding Admin</h1>
+          <h1 className="text-lg md:text-xl font-bold truncate">Sneha Sliding Admin</h1>
         </div>
         <button
           onClick={() => setIsAuthenticated(false)}
-          className="text-red-600 flex items-center gap-2 hover:bg-red-50 px-3 py-1 rounded-md"
+          className="text-red-600 flex items-center gap-1 md:gap-2 hover:bg-red-50 px-2 md:px-3 py-1 rounded-md text-sm md:text-base"
         >
-          <LogOut size={18} /> Logout
+          <LogOut size={16} className="md:w-[18px] md:h-[18px]" /> <span className="hidden sm:inline">Logout</span>
         </button>
       </nav>
 
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex gap-4 mb-8">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        <div className="flex flex-wrap gap-3 md:gap-4 mb-6 md:mb-8">
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-6 py-2 rounded-full font-medium ${activeTab === 'posts' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+            className={`px-4 md:px-6 py-2 rounded-full font-medium text-sm md:text-base flex-1 sm:flex-none text-center transition-colors ${activeTab === 'posts' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 border border-transparent shadow-sm'}`}
           >
             Manage Gallery
           </button>
           <button
             onClick={() => setActiveTab('enquiries')}
-            className={`px-6 py-2 rounded-full font-medium ${activeTab === 'enquiries' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+            className={`px-4 md:px-6 py-2 rounded-full font-medium text-sm md:text-base flex-1 sm:flex-none text-center transition-colors ${activeTab === 'enquiries' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 border border-transparent shadow-sm'}`}
           >
             View Enquiries
           </button>
         </div>
 
         {activeTab === 'posts' && (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Create Post Form */}
             <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm h-fit">
               <h2 className="text-lg font-bold mb-4">Add New Post</h2>
