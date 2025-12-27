@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AUTHORS, GalleryItem, ServiceMode, Enquiry, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
 import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage } from '../utils/storage';
-import { Trash2, ArrowLeft, LogOut } from 'lucide-react';
+import { Trash2, ArrowLeft, LogOut, X } from 'lucide-react';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,6 +14,8 @@ const Admin: React.FC = () => {
   const [service, setService] = useState('');
   const [author, setAuthor] = useState(AUTHORS[0]);
   const [imageUrl, setImageUrl] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [desc, setDesc] = useState('');
 
   // Data Lists
@@ -67,42 +69,90 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleImageUpload = async (file: File | null) => {
-    if (!file) return;
+  const handleImagesUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
 
-    // Upload to Supabase Storage
-    const imageUrl = await uploadImage(file);
-    if (imageUrl) {
-      setImageUrl(imageUrl);
+    setIsUploading(true);
+    const uploadedUrls: string[] = [];
+
+    // Upload each file
+    for (let i = 0; i < files.length; i++) {
+      const url = await uploadImage(files[i]);
+      if (url) uploadedUrls.push(url);
+    }
+
+    if (uploadedUrls.length > 0) {
+      setImages(prev => [...prev, ...uploadedUrls]);
+      // Set the first image as main imageUrl if not already set
+      if (!imageUrl && uploadedUrls.length > 0) {
+        setImageUrl(uploadedUrls[0]);
+      } else if (images.length === 0 && uploadedUrls.length > 0) {
+        // Logic to fallback
+        setImageUrl(uploadedUrls[0]);
+      }
+    }
+    setIsUploading(false);
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+    // If we removed the currently set 'imageUrl' (cover), reset it to the first of the remaining
+    if (newImages.length > 0) {
+      setImageUrl(newImages[0]);
     } else {
-      alert('Failed to upload image. Please try again.');
+      setImageUrl('');
     }
   };
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageUrl) {
-      alert('Please upload an image before submitting.');
+
+    // Validation
+    const errors: string[] = [];
+    if (!title.trim()) errors.push("Title is required");
+    if (!category) errors.push("Category is required");
+    if (!service) errors.push("Service Type is required");
+    if (!author) errors.push("Worker (Author) is required");
+    if (!desc.trim()) errors.push("Description is required");
+    if (images.length === 0 && !imageUrl) errors.push("At least one image is required");
+
+    if (errors.length > 0) {
+      alert("Please fill in all required fields:\n- " + errors.join("\n- "));
       return;
     }
+
+    // Use existing imageUrl if images array is empty (backward compatibility fallback)
+    // OR use the first image of the array as the cover
+    const finalCoverUrl = images.length > 0 ? images[0] : imageUrl;
+    const finalImages = images.length > 0 ? images : [imageUrl];
+
     const newPost = {
       title,
       category,
       service,
       author,
-      imageUrl,
+      imageUrl: finalCoverUrl,
+      images: finalImages,
       type: 'image' as const,
       date: new Date().toISOString(),
       description: desc
     };
-    await addGalleryPost(newPost);
-    await refreshData();
-    // Reset Form
-    setTitle('');
-    setImageUrl('');
-    setDesc('');
-    setService('');
-    alert('Post added successfully!');
+
+    try {
+      await addGalleryPost(newPost);
+      await refreshData();
+      // Reset Form
+      setTitle('');
+      setImageUrl('');
+      setImages([]);
+      setDesc('');
+      setService('');
+      alert('Post added successfully!');
+    } catch (error) {
+      console.error("Error creating post:", error);
+      alert('Failed to create post. Please try again.');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -188,25 +238,40 @@ const Admin: React.FC = () => {
                   <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border p-2 rounded" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Upload Image</label>
+                  <label className="block text-sm font-medium mb-1">Upload Images (Successive uploads allowed)</label>
                   <input
-                    required
                     type="file"
+                    multiple
                     accept="image/*,video/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0] || null;
-                      if (file) {
-                        await handleImageUpload(file);
-                      }
-                    }}
+                    onChange={(e) => handleImagesUpload(e.target.files)}
                     className="w-full border p-2 rounded bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, WEBP (max few MB).</p>
-                  {imageUrl && (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold text-gray-600 mb-1">Preview</p>
-                      <img src={imageUrl} alt="Preview" className="w-full h-40 object-cover rounded-lg border" />
+                  {isUploading && <p className="text-xs text-blue-600 mt-1">Uploading...</p>}
+
+                  {/* Image Grid Preview */}
+                  {images.length > 0 ? (
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={img} alt={`Upload ${idx + 1}`} className="w-full h-20 object-cover rounded-md border" />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={12} />
+                          </button>
+                          {idx === 0 && <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center">Cover</span>}
+                        </div>
+                      ))}
                     </div>
+                  ) : (
+                    imageUrl && (
+                      <div className="mt-3">
+                        <p className="text-xs font-semibold text-gray-600 mb-1">Preview</p>
+                        <img src={imageUrl} alt="Preview" className="w-full h-40 object-cover rounded-lg border" />
+                      </div>
+                    )
                   )}
                 </div>
                 <div>
@@ -290,76 +355,79 @@ const Admin: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
+        )
+        }
 
-        {activeTab === 'enquiries' && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="p-4 border-b">
-              <h2 className="text-lg font-bold">Customer Enquiries</h2>
-              <p className="text-sm text-gray-500">View all customer inquiries submitted through the website</p>
-            </div>
+        {
+          activeTab === 'enquiries' && (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-bold">Customer Enquiries</h2>
+                <p className="text-sm text-gray-500">View all customer inquiries submitted through the website</p>
+              </div>
 
-            {loadingEnquiries ? (
-              <div className="p-8 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                <p>Loading enquiries...</p>
-              </div>
-            ) : enquiriesError ? (
-              <div className="p-8 text-center">
-                <p className="text-red-500 mb-2">{enquiriesError}</p>
-                <button
-                  onClick={refreshData}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <>
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="p-4">Date</th>
-                      <th className="p-4">Name</th>
-                      <th className="p-4">Phone</th>
-                      <th className="p-4">Worker</th>
-                      <th className="p-4">Message</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {enquiries.map((enq, idx) => (
-                      <tr key={enq.id || idx}>
-                        <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
-                          {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
-                        </td>
-                        <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
-                        <td className="p-4 text-blue-600">{enq.phone || 'N/A'}</td>
-                        <td className="p-4">{enq.worker || 'Not specified'}</td>
-                        <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
-                      </tr>
-                    ))}
-                    {enquiries.length === 0 && (
+              {loadingEnquiries ? (
+                <div className="p-8 text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                  <p>Loading enquiries...</p>
+                </div>
+              ) : enquiriesError ? (
+                <div className="p-8 text-center">
+                  <p className="text-red-500 mb-2">{enquiriesError}</p>
+                  <button
+                    onClick={refreshData}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b">
                       <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-500">
-                          <p>No enquiries received yet.</p>
-                          <p className="text-sm mt-2">Customer enquiries will appear here once submitted through the website.</p>
-                        </td>
+                        <th className="p-4">Date</th>
+                        <th className="p-4">Name</th>
+                        <th className="p-4">Phone</th>
+                        <th className="p-4">Worker</th>
+                        <th className="p-4">Message</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y">
+                      {enquiries.map((enq, idx) => (
+                        <tr key={enq.id || idx}>
+                          <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
+                            {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
+                          </td>
+                          <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
+                          <td className="p-4 text-blue-600">{enq.phone || 'N/A'}</td>
+                          <td className="p-4">{enq.worker || 'Not specified'}</td>
+                          <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
+                        </tr>
+                      ))}
+                      {enquiries.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-gray-500">
+                            <p>No enquiries received yet.</p>
+                            <p className="text-sm mt-2">Customer enquiries will appear here once submitted through the website.</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
 
-                {enquiries.length > 0 && (
-                  <div className="p-4 bg-gray-50 border-t text-sm text-gray-500">
-                    Showing {enquiries.length} enquiry(s)
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+                  {enquiries.length > 0 && (
+                    <div className="p-4 bg-gray-50 border-t text-sm text-gray-500">
+                      Showing {enquiries.length} enquiry(s)
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        }
+      </div >
+    </div >
   );
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GalleryItem, AUTHORS, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
 import { getGalleryPosts } from '../utils/storage';
-import { X, ZoomIn } from 'lucide-react';
+import { X, ZoomIn, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '../App';
 
 const GallerySection: React.FC = () => {
@@ -10,8 +10,9 @@ const GallerySection: React.FC = () => {
   const [filteredItems, setFilteredItems] = useState<GalleryItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'aluminium' | 'painting'>('all');
   const [authorFilter, setAuthorFilter] = useState<string>('all');
-  const [serviceFilter, setServiceFilter] = useState<string>('all'); // New filter state
+  const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,17 +73,76 @@ const GallerySection: React.FC = () => {
     setServiceFilter('all');
   }, [filter]);
 
+  // Reset image index when opening a new item
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [selectedItem]);
+
   const openLightbox = (item: GalleryItem) => setSelectedItem(item);
   const closeLightbox = () => setSelectedItem(null);
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedItem) return;
+    const imagesList = (selectedItem.images && selectedItem.images.length > 0) ? selectedItem.images : [selectedItem.imageUrl];
+    setCurrentImageIndex((prev) => (prev + 1) % imagesList.length);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedItem) return;
+    const imagesList = (selectedItem.images && selectedItem.images.length > 0) ? selectedItem.images : [selectedItem.imageUrl];
+    setCurrentImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+  };
 
   // Handle ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') {
+        if (selectedItem) {
+          const imagesList = (selectedItem.images && selectedItem.images.length > 0) ? selectedItem.images : [selectedItem.imageUrl];
+          setCurrentImageIndex((prev) => (prev + 1) % imagesList.length);
+        }
+      }
+      if (e.key === 'ArrowLeft') {
+        if (selectedItem) {
+          const imagesList = (selectedItem.images && selectedItem.images.length > 0) ? selectedItem.images : [selectedItem.imageUrl];
+          setCurrentImageIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+        }
+      }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
+  }, [selectedItem]);
+
+  // Swipe support
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      handleNextImage({ stopPropagation: () => { } } as React.MouseEvent);
+    }
+    if (isRightSwipe) {
+      handlePrevImage({ stopPropagation: () => { } } as React.MouseEvent);
+    }
+    setTouchStart(0);
+    setTouchEnd(0);
+  }
 
   // Determine available services based on current filter
   const availableServices = filter === 'aluminium'
@@ -90,6 +150,15 @@ const GallerySection: React.FC = () => {
     : filter === 'painting'
       ? INITIAL_PAINTING_SERVICES
       : [...INITIAL_ALUMINIUM_SERVICES, ...INITIAL_PAINTING_SERVICES];
+
+  // Helper for current image in lightbox
+  const getCurrentImage = () => {
+    if (!selectedItem) return '';
+    const imagesList = (selectedItem.images && selectedItem.images.length > 0) ? selectedItem.images : [selectedItem.imageUrl];
+    return imagesList[currentImageIndex] || selectedItem.imageUrl;
+  };
+
+  const hasMultipleImages = (item: GalleryItem) => item.images && item.images.length > 1;
 
   return (
     <section className="py-32 px-6 max-w-7xl mx-auto scroll-mt-24" id="gallery">
@@ -177,7 +246,7 @@ const GallerySection: React.FC = () => {
               onClick={() => openLightbox(item)}
               className="group relative cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 bg-white border border-gray-100 hover:border-transparent hover:-translate-y-2"
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[4/3] overflow-hidden relative">
                 <img
                   src={item.imageUrl}
                   alt={item.title}
@@ -188,6 +257,14 @@ const GallerySection: React.FC = () => {
                     target.src = 'https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found';
                   }}
                 />
+
+                {/* Multiple Images Indicator */}
+                {hasMultipleImages(item) && (
+                  <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white p-1.5 rounded-lg">
+                    <Layers size={16} />
+                  </div>
+                )}
+
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white">
                     <ZoomIn size={24} />
@@ -232,13 +309,36 @@ const GallerySection: React.FC = () => {
             <X size={32} />
           </button>
 
+          {/* Navigation Arrows */}
+          {hasMultipleImages(selectedItem) && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-50 p-2 bg-black/20 hover:bg-black/40 rounded-full transition-all"
+              >
+                <ChevronLeft size={40} />
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-50 p-2 bg-black/20 hover:bg-black/40 rounded-full transition-all"
+              >
+                <ChevronRight size={40} />
+              </button>
+            </>
+          )}
+
           <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8 items-center md:items-start bg-black/50 p-2 md:p-8 rounded-3xl overflow-hidden md:max-h-[90vh]">
-            <div className="flex-1 flex items-center justify-center w-full">
+            <div
+              className="flex-1 flex items-center justify-center w-full relative touch-pan-y"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               {selectedItem.type === 'video' ? (
-                <video controls src={selectedItem.imageUrl} className="max-h-[60vh] md:max-h-[80vh] w-auto rounded-xl shadow-2xl" />
+                <video controls src={getCurrentImage()} className="max-h-[60vh] md:max-h-[80vh] w-auto rounded-xl shadow-2xl" />
               ) : (
                 <img
-                  src={selectedItem.imageUrl}
+                  src={getCurrentImage()}
                   alt={selectedItem.title}
                   className="max-h-[60vh] md:max-h-[80vh] w-full object-contain rounded-xl shadow-2xl bg-black"
                   onError={(e) => {
@@ -247,6 +347,13 @@ const GallerySection: React.FC = () => {
                     target.src = 'https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found';
                   }}
                 />
+              )}
+
+              {/* Image Counter Indicator */}
+              {hasMultipleImages(selectedItem) && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
+                  {currentImageIndex + 1} / {selectedItem.images?.length}
+                </div>
               )}
             </div>
 

@@ -6,7 +6,8 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import GallerySection from '../components/GallerySection';
 import { addEnquiry } from '../utils/storage';
 
-const Navbar: React.FC = () => {  const { mode, toggleMode } = useTheme();
+const Navbar: React.FC = () => {
+  const { mode, toggleMode } = useTheme();
   const isAlu = mode === 'aluminium';
   const [scrolled, setScrolled] = useState(false);
 
@@ -21,12 +22,12 @@ const Navbar: React.FC = () => {  const { mode, toggleMode } = useTheme();
       <div className={`max-w-7xl mx-auto rounded-full transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3 px-4 md:px-6' : 'bg-transparent py-4 px-4'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg ${isAlu ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-purple-600 to-purple-700'}`}>
-               <span className="text-lg">S</span>
-             </div>
-             <span className={`font-sans text-xl font-bold tracking-tight ${scrolled ? 'text-gray-900' : 'text-white drop-shadow-md'}`}>
-               Sneha Sliding<span className="opacity-70">.</span>
-             </span>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-lg ${isAlu ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-purple-600 to-purple-700'}`}>
+              <span className="text-lg">S</span>
+            </div>
+            <span className={`font-sans text-xl font-bold tracking-tight ${scrolled ? 'text-gray-900' : 'text-white drop-shadow-md'}`}>
+              Sneha Sliding<span className="opacity-70">.</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -36,16 +37,15 @@ const Navbar: React.FC = () => {  const { mode, toggleMode } = useTheme();
               <a href="#about" className="hover:text-current transition-opacity hover:opacity-70">About</a>
               <a href="#contact" className="hover:text-current transition-opacity hover:opacity-70">Contact</a>
             </div>
-            
-            <button 
+
+            <button
               onClick={toggleMode}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all hover:scale-105 active:scale-95 ${
-                isAlu 
-                  ? 'bg-white text-blue-700 border-blue-100' 
-                  : 'bg-white text-purple-700 border-purple-100'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all hover:scale-105 active:scale-95 ${isAlu
+                ? 'bg-white text-blue-700 border-blue-100'
+                : 'bg-white text-purple-700 border-purple-100'
+                }`}
             >
-              {isAlu ? <ToggleLeft size={18}/> : <ToggleRight size={18}/>}
+              {isAlu ? <ToggleLeft size={18} /> : <ToggleRight size={18} />}
               <span className="text-xs font-bold uppercase tracking-wider">{mode === 'aluminium' ? 'Glass Work' : 'Interior'}</span>
             </button>
           </div>
@@ -64,36 +64,35 @@ const Home: React.FC = () => {
   const themeColor = isAlu ? 'text-blue-900' : 'text-purple-900';
   const themeSubColor = isAlu ? 'text-blue-500' : 'text-purple-600';
   const themeBg = isAlu ? 'bg-blue-50' : 'bg-purple-50';
-  
+
   // Modern gradient buttons
-  const primaryBtnClass = isAlu 
-    ? 'bg-blue-600 text-white shadow-glow-slate hover:bg-blue-700' 
+  const primaryBtnClass = isAlu
+    ? 'bg-blue-600 text-white shadow-glow-slate hover:bg-blue-700'
     : 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-glow-orange hover:from-purple-700 hover:to-purple-800';
 
   // --- Hero Image Logic ---
-  const heroImage = isAlu 
-    ? "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp" 
+  const heroImage = isAlu
+    ? "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp"
     : "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp";
-  
+
   // --- Contact Form State ---
   const [formData, setFormData] = useState({ name: '', phone: '', message: '', worker: '' });
-  const [formStatus, setFormStatus] = useState<'idle' | 'success'>('idle');
+  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await addEnquiry({
       ...formData,
-      // Only include date if your table supports it
-      // date: new Date().toISOString()
+      date: new Date().toISOString()
     });
-    
+
     if (success) {
       setFormStatus('success');
       setFormData({ name: '', phone: '', message: '', worker: '' });
     } else {
       alert('Failed to submit enquiry. Please check the console for details.');
     }
-    
+
     setTimeout(() => setFormStatus('idle'), 3000);
   };
 
@@ -107,7 +106,7 @@ const Home: React.FC = () => {
           <img src={heroImage} alt="Hero" className="w-full h-full object-cover scale-105" />
           <div className={`absolute inset-0 bg-gradient-to-r ${isAlu ? 'from-blue-900/90 via-blue-900/70 to-blue-900/20' : 'from-purple-900/90 via-purple-900/70 to-purple-900/20'}`} />
         </div>
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-20">
           <div className="max-w-3xl animate-in fade-in slide-in-from-bottom-10 duration-1000">
             <div className={`inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full text-xs font-bold tracking-widest text-white border border-white/20 backdrop-blur-sm uppercase`}>
@@ -118,18 +117,18 @@ const Home: React.FC = () => {
               {isAlu ? <>Sneha <span className="text-blue-300">Sliding</span></> : <>Sneha <span className="text-purple-300">Interiors</span></>}
             </h1>
             <p className="text-lg md:text-xl text-gray-100 mb-10 max-w-xl leading-relaxed font-light">
-              {isAlu 
-                ? 'Expert craftsmanship in aluminium sliding windows, modern office partitions, and custom glass fabrication.' 
+              {isAlu
+                ? 'Expert craftsmanship in aluminium sliding windows, modern office partitions, and custom glass fabrication.'
                 : 'Transforming homes with vibrant colors, elegant false ceilings, and premium wall finishes.'}
             </p>
             <div className="flex flex-wrap gap-4">
-               <a href="#contact" className={`group px-8 py-4 rounded-full font-bold text-base transition-all duration-300 flex items-center gap-2 ${isAlu ? 'bg-white text-blue-900 hover:bg-blue-50' : 'bg-white text-purple-900 hover:bg-purple-50'}`}>
-                 Book Consultation
-                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform"/>
-               </a>
-               <a href="#gallery" className="px-8 py-4 rounded-full font-bold text-base border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all">
-                 Our Work
-               </a>
+              <a href="#contact" className={`group px-8 py-4 rounded-full font-bold text-base transition-all duration-300 flex items-center gap-2 ${isAlu ? 'bg-white text-blue-900 hover:bg-blue-50' : 'bg-white text-purple-900 hover:bg-purple-50'}`}>
+                Book Consultation
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </a>
+              <a href="#gallery" className="px-8 py-4 rounded-full font-bold text-base border border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all">
+                Our Work
+              </a>
             </div>
           </div>
         </div>
@@ -155,10 +154,10 @@ const Home: React.FC = () => {
               return (
                 <div key={idx} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:border-transparent hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full">
                   <div className="h-48 overflow-hidden relative">
-                    <img 
-                      src={s.image} 
-                      alt={s.title} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    <img
+                      src={s.image}
+                      alt={s.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className={`absolute inset-0 bg-gradient-to-t ${isAlu ? 'from-blue-900/60' : 'from-purple-900/60'} to-transparent opacity-60`}></div>
                   </div>
@@ -189,7 +188,7 @@ const Home: React.FC = () => {
               <p className="text-gray-600 text-lg mb-10 leading-relaxed">
                 Swipe to see the dramatic difference our work makes. Whether it's a sleek new window installation or a complete room repaint, the results speak for themselves.
               </p>
-              
+
               <div className="space-y-6 mb-12">
                 {[
                   { title: 'Modern Aesthetics', desc: 'Upgrade from old styles to contemporary designs.' },
@@ -214,16 +213,16 @@ const Home: React.FC = () => {
             </div>
 
             <div className="order-1 lg:order-2">
-               <div className="p-4 bg-white rounded-xl shadow-none">
-                 <BeforeAfterSlider 
-                   beforeImage="https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"
-                   afterImage="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
-                   className=""
-                 />
-                 <div className="mt-6 text-center">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Drag slider handle to open the view</span>
-                 </div>
-               </div>
+              <div className="p-4 bg-white rounded-xl shadow-none">
+                <BeforeAfterSlider
+                  beforeImage="https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"
+                  afterImage="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
+                  className=""
+                />
+                <div className="mt-6 text-center">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Drag slider handle to open the view</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -236,31 +235,31 @@ const Home: React.FC = () => {
 
       {/* Team Section */}
       <section id="about" className="py-32 bg-white scroll-mt-24">
-         <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              <h2 className={`text-4xl md:text-5xl font-serif font-bold mb-6 ${themeColor}`}>Meet The Team</h2>
-              <p className="text-gray-500">The dedicated family behind Sneha Sliding ensuring quality in every inch.</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-10">
-              {[
-                { name: 'Shankar Soni', role: 'Aluminum work', bio: 'Master of fabrication with 25+ years experience.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
-                { name: 'Manoj soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
-                { name: 'Santosh Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600' }
-              ].map((member, i) => (
-                <div key={i} className="group cursor-default">
-                  <div className="relative overflow-hidden rounded-3xl mb-6 shadow-md aspect-[4/5]">
-                    <img src={member.img} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex flex-col justify-end p-8 ${isAlu ? 'bg-blue-900/80' : 'bg-purple-900/80'}`}>
-                      <p className="text-white text-sm font-medium leading-relaxed">{member.bio}</p>
-                    </div>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className={`text-4xl md:text-5xl font-serif font-bold mb-6 ${themeColor}`}>Meet The Team</h2>
+            <p className="text-gray-500">The dedicated family behind Sneha Sliding ensuring quality in every inch.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-10">
+            {[
+              { name: 'Shankar Soni', role: 'Aluminum work', bio: 'Master of fabrication with 25+ years experience.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
+              { name: 'Manoj soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
+              { name: 'Santosh Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600' }
+            ].map((member, i) => (
+              <div key={i} className="group cursor-default">
+                <div className="relative overflow-hidden rounded-3xl mb-6 shadow-md aspect-[4/5]">
+                  <img src={member.img} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-90 transition-opacity duration-300 flex flex-col justify-end p-8 ${isAlu ? 'bg-blue-900/80' : 'bg-purple-900/80'}`}>
+                    <p className="text-white text-sm font-medium leading-relaxed">{member.bio}</p>
                   </div>
-                  <h3 className={`text-2xl font-bold ${themeColor}`}>{member.name}</h3>
-                  <p className={`text-sm font-bold uppercase tracking-wider mt-1 ${themeSubColor}`}>{member.role}</p>
                 </div>
-              ))}
-            </div>
-         </div>
+                <h3 className={`text-2xl font-bold ${themeColor}`}>{member.name}</h3>
+                <p className={`text-sm font-bold uppercase tracking-wider mt-1 ${themeSubColor}`}>{member.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Contact Section */}
@@ -272,7 +271,7 @@ const Home: React.FC = () => {
               <p className="text-white/80 mb-12 text-lg leading-relaxed">
                 Contact Sneha Sliding for a free site visit and estimation. We guarantee the best rates and quality service.
               </p>
-              
+
               <div className="space-y-8">
                 <div className="flex items-start gap-6 group">
                   <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -281,13 +280,13 @@ const Home: React.FC = () => {
                   <div>
                     <p className="text-sm text-white/60 font-bold uppercase tracking-wider mb-1">Call Us</p>
                     {isAlu ? (
-                                          <p className="font-sans text-2xl font-bold">+91 93229 32329</p>
-                                        ) : (
-                                          <div className="space-y-2">
-                                            <p className="font-sans text-2xl font-bold">+91 98334 51763 (Manoj Soni)</p>
-                                            <p className="font-sans text-2xl font-bold">+91 98207 19496 (Santosh Soni)</p>
-                                          </div>
-                                        )}
+                      <p className="font-sans text-2xl font-bold">+91 93229 32329</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="font-sans text-2xl font-bold">+91 98334 51763 (Manoj Soni)</p>
+                        <p className="font-sans text-2xl font-bold">+91 98207 19496 (Santosh Soni)</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start gap-6 group">
@@ -305,7 +304,7 @@ const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm text-white/60 font-bold uppercase tracking-wider mb-1">Workshop</p>
-                    <p className="font-sans text-xl font-bold leading-snug">Shop No 44 Rajkamal Market Plot No 18,<br/>10, Nerul West, Nerul, Navi Mumbai, Maharashtra 400706</p>
+                    <p className="font-sans text-xl font-bold leading-snug">Shop No 44 Rajkamal Market Plot No 18,<br />10, Nerul West, Nerul, Navi Mumbai, Maharashtra 400706</p>
                   </div>
                 </div>
               </div>
@@ -316,23 +315,23 @@ const Home: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all" 
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     placeholder="Your Name"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone</label>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     required
                     value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all" 
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     placeholder="Your Number"
                   />
                 </div>
@@ -340,7 +339,7 @@ const Home: React.FC = () => {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Worker</label>
                   <select
                     value={formData.worker}
-                    onChange={e => setFormData({...formData, worker: e.target.value})}
+                    onChange={e => setFormData({ ...formData, worker: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     required
                   >
@@ -352,17 +351,17 @@ const Home: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Message</label>
-                  <textarea 
-                    rows={4} 
+                  <textarea
+                    rows={4}
                     required
                     value={formData.message}
-                    onChange={e => setFormData({...formData, message: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all" 
+                    onChange={e => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     placeholder="Requirements..."
                   ></textarea>
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all transform hover:-translate-y-1 hover:shadow-lg ${primaryBtnClass}`}
                 >
                   {formStatus === 'success' ? 'Sent Successfully!' : 'Send Message'}
@@ -375,16 +374,16 @@ const Home: React.FC = () => {
 
       <footer className="bg-gray-900 text-gray-400 py-12 text-center text-sm">
         <div className="flex items-center justify-center gap-2 mb-4">
-           <span className="text-white font-bold text-lg">Sneha Sliding</span>
+          <span className="text-white font-bold text-lg">Sneha Sliding</span>
         </div>
         <p className="mb-6">&copy; {new Date().getFullYear()} Sneha Sliding & Interiors. All rights reserved.</p>
         <div className="flex justify-center gap-6 mb-8">
-            <a href="https://www.instagram.com/shankar.soni.311?igsh=cnpnOGtwd3BqZTB6" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-              <Instagram size={20} />
-            </a>
-            <a href="https://www.facebook.com/share/16hL2gSP4p/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-              <Facebook size={20} />
-            </a>
+          <a href="https://www.instagram.com/shankar.soni.311?igsh=cnpnOGtwd3BqZTB6" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <Instagram size={20} />
+          </a>
+          <a href="https://www.facebook.com/share/16hL2gSP4p/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <Facebook size={20} />
+          </a>
         </div>
         <a href="#/admin" className="inline-block text-xs font-bold uppercase tracking-widest hover:text-white transition-colors border border-gray-700 px-4 py-2 rounded hover:border-gray-500">Admin Login</a>
       </footer>

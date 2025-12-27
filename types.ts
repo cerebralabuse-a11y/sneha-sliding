@@ -8,6 +8,7 @@ export interface GalleryItem {
   author: string;
   date: string;
   imageUrl: string;
+  images?: string[]; // Array of all images for the post
   type: 'image' | 'video';
   description?: string;
 }
