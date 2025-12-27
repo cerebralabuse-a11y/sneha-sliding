@@ -238,11 +238,12 @@ const Admin: React.FC = () => {
                   <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full border p-2 rounded" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Upload Images (Successive uploads allowed)</label>
+                  <label className="block text-sm font-medium mb-1">Upload Images (Long press to select multiple on mobile)</label>
                   <input
+                    id="image-upload"
                     type="file"
                     multiple
-                    accept="image/*,video/*"
+                    accept="image/*"
                     onChange={(e) => handleImagesUpload(e.target.files)}
                     className="w-full border p-2 rounded bg-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
