@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AUTHORS, GalleryItem, ServiceMode, Enquiry, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
-import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage } from '../utils/storage';
+import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage, deleteEnquiry } from '../utils/storage';
 import { Trash2, ArrowLeft, LogOut, X } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -159,6 +159,17 @@ const Admin: React.FC = () => {
     if (confirm('Are you sure you want to delete this post?')) {
       await deleteGalleryPost(id);
       await refreshData();
+    }
+  };
+
+  const handleDeleteEnquiry = async (id: string) => {
+    if (confirm('Are you sure you want to delete this enquiry?')) {
+      const success = await deleteEnquiry(id);
+      if (success) {
+        await refreshData();
+      } else {
+        alert('Failed to delete enquiry');
+      }
     }
   };
 
@@ -421,18 +432,19 @@ const Admin: React.FC = () => {
                     <table className="w-full text-left">
                       <thead className="bg-gray-50 border-b">
                         <tr>
-                          <th className="p-4">Date</th>
+                          <th className="p-4">Date & Time</th>
                           <th className="p-4">Name</th>
                           <th className="p-4">Phone</th>
                           <th className="p-4">Worker</th>
                           <th className="p-4">Message</th>
+                          <th className="p-4">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
                         {enquiries.map((enq, idx) => (
                           <tr key={enq.id || idx}>
                             <td className="p-4 whitespace-nowrap text-gray-500 text-sm">
-                              {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
+                              {enq.date ? new Date(enq.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                             </td>
                             <td className="p-4 font-bold">{enq.name || 'N/A'}</td>
                             <td className="p-4 text-blue-600">
@@ -440,6 +452,11 @@ const Admin: React.FC = () => {
                             </td>
                             <td className="p-4">{enq.worker || 'Not specified'}</td>
                             <td className="p-4 text-gray-600 max-w-xs">{enq.message || 'No message'}</td>
+                            <td className="p-4">
+                              <button onClick={() => handleDeleteEnquiry(enq.id)} className="text-red-500 hover:text-red-700">
+                                <Trash2 size={18} />
+                              </button>
+                            </td>
                           </tr>
                         ))}
                         {enquiries.length === 0 && (
@@ -458,19 +475,27 @@ const Admin: React.FC = () => {
                   <div className="md:hidden space-y-4 p-4">
                     {enquiries.map((enq, idx) => (
                       <div key={enq.id || idx} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="text-xs text-gray-500 block mb-1">
-                              {enq.date ? new Date(enq.date).toLocaleDateString() : 'N/A'}
-                            </span>
-                            <h3 className="font-bold text-lg">{enq.name || 'N/A'}</h3>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <span className="text-xs text-gray-500 block mb-1">
+                                {enq.date ? new Date(enq.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                              </span>
+                              <h3 className="font-bold text-lg">{enq.name || 'N/A'}</h3>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                              {enq.worker && (
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {enq.worker}
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handleDeleteEnquiry(enq.id)}
+                                className="text-red-500 p-1.5 bg-white border rounded shadow-sm"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
-                          {enq.worker && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {enq.worker}
-                            </span>
-                          )}
-                        </div>
 
                         <a href={`tel:${enq.phone}`} className="text-blue-600 font-medium block mb-3 flex items-center gap-2">
                           <span>📞</span> {enq.phone || 'N/A'}

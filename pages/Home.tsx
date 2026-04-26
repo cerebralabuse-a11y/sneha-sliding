@@ -113,8 +113,8 @@ const Home: React.FC = () => {
 
   // --- Hero Image Logic ---
   const heroImage = isAlu
-    ? "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp"
-    : "https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp";
+    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp"
+    : "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp";
 
   // --- Contact Form State ---
   const [formData, setFormData] = useState({ name: '', phone: '', message: '', worker: '' });
@@ -256,8 +256,12 @@ const Home: React.FC = () => {
             <div className="order-1 lg:order-2">
               <div className="p-4 bg-white rounded-xl shadow-none">
                 <BeforeAfterSlider
-                  beforeImage="https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"
-                  afterImage="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
+                  beforeImage={isAlu 
+                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Gemini_Generated_Image_yxbf7dyxbf7dyxbf.png" 
+                    : "https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"}
+                  afterImage={isAlu 
+                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/605106268_1440908621376022_1780417851168379092_n.jpg" 
+                    : "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"}
                   className=""
                 />
                 <div className="mt-6 text-center">
@@ -284,9 +288,9 @@ const Home: React.FC = () => {
 
           <div className="grid md:grid-cols-3 gap-10">
             {[
-              { name: 'Shankar Soni', role: 'Aluminum work', bio: 'Master of fabrication with 25+ years experience.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
-              { name: 'Manoj soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
-              { name: 'Santosh Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600' }
+              { name: 'Shankar Soni', role: 'Aluminum work', bio: 'Master of fabrication with 25+ years experience.', img: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg' },
+              { name: 'Manoj Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg' },
+              { name: 'Santosh Soni', role: 'Civil work', bio: 'Expert in texture, color theory and finishes.', img: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/ssantoh%20soni.jpeg' }
             ].map((member, i) => (
               <div key={i} className="group cursor-default">
                 <div className="relative overflow-hidden rounded-3xl mb-6 shadow-md aspect-[4/5]">

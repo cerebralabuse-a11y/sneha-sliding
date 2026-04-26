@@ -8,7 +8,7 @@ const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
     author: 'Shankar Soni',
     date: '2023-10-15',
     type: 'image',
-    imageUrl: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg',
+    imageUrl: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/shankarsoni.jpg',
     description: 'Glass and aluminium partition for a tech startup.'
   },
   {
@@ -17,7 +17,7 @@ const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
     author: 'MANOJ SONI',
     date: '2023-11-02',
     type: 'image',
-    imageUrl: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg',
+    imageUrl: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/manojsoni.jpg',
     description: 'Royal texture paint with false ceiling integration.'
   },
   {
@@ -26,7 +26,7 @@ const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
     author: 'Santosh Soni',
     date: '2023-12-10',
     type: 'image',
-    imageUrl: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp',
+    imageUrl: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/blog_thumb_1760688683.webp',
     description: 'Balcony slider with mosquito mesh.'
   },
   {
@@ -35,7 +35,7 @@ const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
     author: 'Shankar Soni',
     date: '2024-01-05',
     type: 'image',
-    imageUrl: 'https://fxwryouedphlotunmzbq.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp',
+    imageUrl: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp',
     description: 'Weather-proof coating for a 2-story villa.'
   }
 ];
@@ -296,6 +296,24 @@ export const deleteGalleryPost = async (id: string) => {
     }
   } catch (error) {
     console.error("Error deleting gallery post:", error);
+  }
+};
+
+export const deleteEnquiry = async (id: string) => {
+  try {
+    const { error } = await supabase
+      .from('enquiries')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error deleting enquiry:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting enquiry:", error);
+    return false;
   }
 };
 
