@@ -22,6 +22,15 @@ export interface Enquiry {
   date?: string; // Made optional since the table might not have this column
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  rating: number;
+  content: string;
+  category: ServiceMode;
+  date?: string;
+}
+
 export interface FamilyMember {
   name: string;
   role: string;

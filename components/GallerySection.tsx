@@ -4,17 +4,28 @@ import { getGalleryPosts } from '../utils/storage';
 import { X, ZoomIn, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '../App';
 
-const GallerySection: React.FC = () => {
+interface GallerySectionProps {
+  activeService?: string;
+}
+
+const GallerySection: React.FC<GallerySectionProps> = ({ activeService }) => {
   const { mode } = useTheme();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<GalleryItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'aluminium' | 'painting'>('all');
   const [authorFilter, setAuthorFilter] = useState<string>('all');
-  const [serviceFilter, setServiceFilter] = useState<string>('all');
+  const [serviceFilter, setServiceFilter] = useState<string>(activeService || 'all');
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (activeService) {
+      setServiceFilter(activeService);
+      setFilter(mode); // Ensure category matches
+    }
+  }, [activeService, mode]);
+
 
   // Helper function to format dates
   const formatDate = (dateString: string) => {

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { AUTHORS, GalleryItem, ServiceMode, Enquiry, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
-import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage, deleteEnquiry } from '../utils/storage';
+import { AUTHORS, GalleryItem, ServiceMode, Enquiry, Testimonial, INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types';
+import { addGalleryPost, getGalleryPosts, getEnquiries, deleteGalleryPost, uploadImage, deleteEnquiry, getTestimonials, addTestimonial, deleteTestimonial } from '../utils/storage';
 import { Trash2, ArrowLeft, LogOut, X } from 'lucide-react';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'posts' | 'enquiries'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'enquiries' | 'testimonials'>('posts');
 
   // New Post State
   const [title, setTitle] = useState('');
@@ -23,6 +23,17 @@ const Admin: React.FC = () => {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loadingEnquiries, setLoadingEnquiries] = useState(false);
   const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
+  
+  // Testimonial State
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(false);
+  const [testiError, setTestiError] = useState<string | null>(null);
+  
+  // New Testimonial Form
+  const [testiName, setTestiName] = useState('');
+  const [testiRating, setTestiRating] = useState(5);
+  const [testiContent, setTestiContent] = useState('');
+  const [testiCategory, setTestiCategory] = useState<ServiceMode>('aluminium');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -30,9 +41,9 @@ const Admin: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  // Refresh enquiries when switching to the enquiries tab
+  // Refresh data when switching tabs
   useEffect(() => {
-    if (isAuthenticated && activeTab === 'enquiries') {
+    if (isAuthenticated) {
       refreshData();
     }
   }, [isAuthenticated, activeTab]);
@@ -41,7 +52,7 @@ const Admin: React.FC = () => {
     const postsData = await getGalleryPosts();
     setPosts(postsData);
 
-    // Fetch enquiries with loading states
+    // Fetch enquiries
     if (activeTab === 'enquiries') {
       setLoadingEnquiries(true);
       setEnquiriesError(null);
@@ -49,13 +60,26 @@ const Admin: React.FC = () => {
         const enquiriesData = await getEnquiries();
         setEnquiries(enquiriesData);
         if (enquiriesData.length === 0) {
-          setEnquiriesError('No enquiries found in the database');
+          setEnquiriesError('No enquiries found');
         }
       } catch (error) {
-        console.error('Error fetching enquiries:', error);
-        setEnquiriesError('Failed to fetch enquiries. Please check the console for details.');
+        setEnquiriesError('Failed to fetch enquiries');
       } finally {
         setLoadingEnquiries(false);
+      }
+    }
+
+    // Fetch testimonials
+    if (activeTab === 'testimonials') {
+      setLoadingTestimonials(true);
+      setTestiError(null);
+      try {
+        const data = await getTestimonials();
+        setTestimonials(data);
+      } catch (error) {
+        setTestiError('Failed to fetch testimonials');
+      } finally {
+        setLoadingTestimonials(false);
       }
     }
   };
@@ -173,6 +197,34 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleCreateTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await addTestimonial({
+      name: testiName,
+      rating: testiRating,
+      content: testiContent,
+      category: testiCategory,
+      date: new Date().toISOString()
+    });
+
+    if (success) {
+      setTestiName('');
+      setTestiContent('');
+      setTestiRating(5);
+      refreshData();
+      alert('Testimonial added!');
+    } else {
+      alert('Failed to add testimonial');
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: string) => {
+    if (confirm('Delete this testimonial?')) {
+      const success = await deleteTestimonial(id);
+      if (success) refreshData();
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -235,6 +287,12 @@ const Admin: React.FC = () => {
             className={`px-4 md:px-6 py-2 rounded-full font-medium text-sm md:text-base flex-1 sm:flex-none text-center transition-colors ${activeTab === 'enquiries' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 border border-transparent shadow-sm'}`}
           >
             View Enquiries
+          </button>
+          <button
+            onClick={() => setActiveTab('testimonials')}
+            className={`px-4 md:px-6 py-2 rounded-full font-medium text-sm md:text-base flex-1 sm:flex-none text-center transition-colors ${activeTab === 'testimonials' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-gray-100 border border-transparent shadow-sm'}`}
+          >
+            Manage Reviews
           </button>
         </div>
 
@@ -475,27 +533,27 @@ const Admin: React.FC = () => {
                   <div className="md:hidden space-y-4 p-4">
                     {enquiries.map((enq, idx) => (
                       <div key={enq.id || idx} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <span className="text-xs text-gray-500 block mb-1">
-                                {enq.date ? new Date(enq.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
-                              </span>
-                              <h3 className="font-bold text-lg">{enq.name || 'N/A'}</h3>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                              {enq.worker && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                  {enq.worker}
-                                </span>
-                              )}
-                              <button
-                                onClick={() => handleDeleteEnquiry(enq.id)}
-                                className="text-red-500 p-1.5 bg-white border rounded shadow-sm"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="text-xs text-gray-500 block mb-1">
+                              {enq.date ? new Date(enq.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                            </span>
+                            <h3 className="font-bold text-lg">{enq.name || 'N/A'}</h3>
                           </div>
+                          <div className="flex gap-2 items-center">
+                            {enq.worker && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                {enq.worker}
+                              </span>
+                            )}
+                            <button
+                              onClick={() => handleDeleteEnquiry(enq.id)}
+                              className="text-red-500 p-1.5 bg-white border rounded shadow-sm"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
 
                         <a href={`tel:${enq.phone}`} className="text-blue-600 font-medium block mb-3 flex items-center gap-2">
                           <span>📞</span> {enq.phone || 'N/A'}
@@ -520,6 +578,79 @@ const Admin: React.FC = () => {
                   )}
                 </>
               )}
+            </div>
+          )
+        }
+
+        {
+          activeTab === 'testimonials' && (
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Add Testimonial Form */}
+              <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm h-fit">
+                <h2 className="text-lg font-bold mb-4">Add Review</h2>
+                <form onSubmit={handleCreateTestimonial} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Customer Name</label>
+                    <input required type="text" value={testiName} onChange={e => setTestiName(e.target.value)} className="w-full border p-2 rounded" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Rating (1-5)</label>
+                    <select value={testiRating} onChange={e => setTestiRating(parseInt(e.target.value))} className="w-full border p-2 rounded">
+                      {[5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{r} Stars</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Review Content</label>
+                    <textarea required value={testiContent} onChange={e => setTestiContent(e.target.value)} className="w-full border p-2 rounded" rows={4}></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Category</label>
+                    <select value={testiCategory} onChange={e => setTestiCategory(e.target.value as ServiceMode)} className="w-full border p-2 rounded">
+                      <option value="aluminium">Aluminium</option>
+                      <option value="painting">Painting</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Save Review</button>
+                </form>
+              </div>
+
+              {/* List Testimonials */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <div className="hidden md:block">
+                    <table className="w-full text-left">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="p-4">Customer</th>
+                          <th className="p-4">Rating</th>
+                          <th className="p-4">Review</th>
+                          <th className="p-4">Category</th>
+                          <th className="p-4">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {testimonials.map(t => (
+                          <tr key={t.id}>
+                            <td className="p-4 font-bold">{t.name}</td>
+                            <td className="p-4 text-yellow-500 font-bold">{t.rating} ★</td>
+                            <td className="p-4 text-sm text-gray-600 max-w-xs truncate">{t.content}</td>
+                            <td className="p-4">
+                              <span className={`text-xs px-2 py-1 rounded ${t.category === 'aluminium' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                                {t.category}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              <button onClick={() => handleDeleteTestimonial(t.id)} className="text-red-500 hover:text-red-700">
+                                <Trash2 size={18} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           )
         }

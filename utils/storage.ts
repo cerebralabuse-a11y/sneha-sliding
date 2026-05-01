@@ -1,4 +1,4 @@
-import { GalleryItem, Enquiry } from '../types';
+import { GalleryItem, Enquiry, Testimonial } from '../types';
 import { supabase } from '../src/supabase';
 
 const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
@@ -37,6 +37,44 @@ const INITIAL_POSTS: Omit<GalleryItem, 'id'>[] = [
     type: 'image',
     imageUrl: 'https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Ombre_Elegance_08ec1c43a1.webp',
     description: 'Weather-proof coating for a 2-story villa.'
+  }
+];
+
+const INITIAL_TESTIMONIALS: Omit<Testimonial, 'id'>[] = [
+  {
+    name: 'Amit Sharma',
+    rating: 5,
+    content: 'Excellent work on the sliding windows. Very professional and timely.',
+    category: 'aluminium',
+    date: '2024-02-10'
+  },
+  {
+    name: 'Priya Verma',
+    rating: 5,
+    content: 'The painting job was fantastic. My living room looks completely transformed!',
+    category: 'painting',
+    date: '2024-03-05'
+  },
+  {
+    name: 'RANJANA DURAPHE',
+    rating: 5,
+    content: 'Excellent work done. Workers were very polite.',
+    category: 'aluminium',
+    date: '2026-01-01'
+  },
+  {
+    name: 'Bijay Tiwari',
+    rating: 5,
+    content: 'Excellent work done by the Owner. Very friendly. Good behaviour.',
+    category: 'aluminium',
+    date: '2025-10-01'
+  },
+  {
+    name: 'Ajay Chaudhary',
+    rating: 5,
+    content: 'Bahut badhiya kam timing is excellent Also rate is obtainable',
+    category: 'aluminium',
+    date: '2023-05-01'
   }
 ];
 
@@ -94,9 +132,39 @@ const initializeEnquiries = async () => {
   }
 };
 
+// Initialize testimonials table if empty
+const initializeTestimonials = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .limit(1);
+
+    if (error) {
+      console.error("Error checking testimonials:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      const { error: insertError } = await supabase
+        .from('testimonials')
+        .insert(INITIAL_TESTIMONIALS);
+
+      if (insertError) {
+        console.error("Error inserting initial testimonials:", insertError);
+      } else {
+        console.log("Initial testimonials inserted successfully");
+      }
+    }
+  } catch (error) {
+    console.error("Error initializing testimonials:", error);
+  }
+};
+
 // Call initialization
 initializeGalleryPosts();
 initializeEnquiries();
+initializeTestimonials();
 
 export const getGalleryPosts = async (): Promise<GalleryItem[]> => {
   try {
@@ -125,9 +193,17 @@ export const addGalleryPost = async (post: Omit<GalleryItem, 'id'>) => {
 
     if (error) {
       console.error("Error adding gallery post:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      throw error;
     }
   } catch (error) {
-    console.error("Error adding gallery post:", error);
+    console.error("Error adding gallery post (catch):", error);
+    throw error;
   }
 };
 
@@ -357,5 +433,59 @@ export const uploadImage = async (file: File): Promise<string | null> => {
   } catch (error) {
     console.error('Unexpected error in uploadImage:', error);
     return null;
+  }
+};
+
+export const getTestimonials = async (): Promise<Testimonial[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching testimonials:", error);
+      return [];
+    }
+
+    return data as Testimonial[];
+  } catch (error) {
+    console.error("Error fetching testimonials:", error);
+    return [];
+  }
+};
+
+export const addTestimonial = async (testimonial: Omit<Testimonial, 'id'>) => {
+  try {
+    const { error } = await supabase
+      .from('testimonials')
+      .insert([testimonial]);
+
+    if (error) {
+      console.error("Error adding testimonial:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error adding testimonial:", error);
+    return false;
+  }
+};
+
+export const deleteTestimonial = async (id: string) => {
+  try {
+    const { error } = await supabase
+      .from('testimonials')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error deleting testimonial:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting testimonial:", error);
+    return false;
   }
 };

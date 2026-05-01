@@ -4,7 +4,9 @@ import { INITIAL_ALUMINIUM_SERVICES, INITIAL_PAINTING_SERVICES } from '../types'
 import { ToggleLeft, ToggleRight, Phone, Mail, MapPin, ArrowRight, CheckCircle2, Instagram, Facebook, Menu, X } from 'lucide-react';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import GallerySection from '../components/GallerySection';
-import { addEnquiry } from '../utils/storage';
+import { addEnquiry, getTestimonials } from '../utils/storage';
+import { Testimonial } from '../types';
+import { Star, Quote, ExternalLink } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { mode, toggleMode } = useTheme();
@@ -137,6 +139,29 @@ const Home: React.FC = () => {
     setTimeout(() => setFormStatus('idle'), 3000);
   };
 
+  // --- Gallery Filtering Logic ---
+  const [activeGalleryService, setActiveGalleryService] = useState<string>('all');
+
+  const handleServiceClick = (serviceTitle: string) => {
+    setActiveGalleryService(serviceTitle);
+    const galleryElement = document.getElementById('gallery');
+    if (galleryElement) {
+      galleryElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // --- Testimonials Logic ---
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    const fetchTestis = async () => {
+      const data = await getTestimonials();
+      setTestimonials(data);
+    };
+    fetchTestis();
+  }, []);
+
+  const filteredTestimonials = testimonials.filter(t => t.category === mode);
+
   return (
     <div className={`min-h-screen transition-colors duration-500 font-sans selection:bg-black/10`}>
       <Navbar />
@@ -193,7 +218,11 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((s, idx) => {
               return (
-                <div key={idx} className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:border-transparent hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full">
+                <div 
+                  key={idx} 
+                  onClick={() => handleServiceClick(s.title)}
+                  className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:border-transparent hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full cursor-pointer"
+                >
                   <div className="h-48 overflow-hidden relative">
                     <img
                       src={s.image}
@@ -256,11 +285,11 @@ const Home: React.FC = () => {
             <div className="order-1 lg:order-2">
               <div className="p-4 bg-white rounded-xl shadow-none">
                 <BeforeAfterSlider
-                  beforeImage={isAlu 
-                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Gemini_Generated_Image_yxbf7dyxbf7dyxbf.png" 
+                  beforeImage={isAlu
+                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Gemini_Generated_Image_yxbf7dyxbf7dyxbf.png"
                     : "https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"}
-                  afterImage={isAlu 
-                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/605106268_1440908621376022_1780417851168379092_n.jpg" 
+                  afterImage={isAlu
+                    ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/605106268_1440908621376022_1780417851168379092_n.jpg"
                     : "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"}
                   className=""
                 />
@@ -275,7 +304,7 @@ const Home: React.FC = () => {
 
       {/* Gallery Section */}
       <div className={`${themeBg} transition-colors duration-500`}>
-        <GallerySection />
+        <GallerySection activeService={activeGalleryService} />
       </div>
 
       {/* Team Section */}
@@ -303,6 +332,102 @@ const Home: React.FC = () => {
                 <p className={`text-sm font-bold uppercase tracking-wider mt-1 ${themeSubColor}`}>{member.role}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Map & Reviews Section */}
+      <section className={`py-20 px-6 ${themeBg} transition-colors duration-500`}>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            {/* Left: Map */}
+            <div className="flex-1 w-full lg:sticky lg:top-32 relative group">
+              <div className="absolute -top-6 -left-6 w-24 h-24 bg-blue-600/10 rounded-full blur-3xl group-hover:bg-blue-600/20 transition-all"></div>
+              <div className="relative h-[450px] md:h-[500px] bg-white p-3 rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden transform group-hover:scale-[1.01] transition-all duration-500">
+                <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-gray-100 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">Our Workshop</span>
+                </div>
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.570280152452!2d73.015599!3d19.0386482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c3026d3e2dfb%3A0xd45e01acc54369e8!2sSneha%20Sliding%20Aluminum%20Fabrication!5e0!3m2!1sen!2sin!4v1777644100401!5m2!1sen!2sin" 
+                  className="w-full h-full rounded-[2rem] border-0"
+                  allowFullScreen={true}
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
+                <a 
+                  href="https://maps.app.goo.gl/ZFSryha38CEY6FT6A" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="absolute bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-xl flex items-center gap-2 hover:bg-blue-700 transition-all hover:translate-y-[-2px] active:scale-95"
+                >
+                  <ExternalLink size={18} />
+                  Open in Google Maps
+                </a>
+              </div>
+            </div>
+
+            {/* Right: Testimonials */}
+            <div className="flex-1 w-full flex flex-col self-stretch">
+              <div className="mb-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center">
+                    <img src="https://www.google.com/images/branding/googleg/1x/googleg_standard_color_128dp.png" alt="Google" className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className={`text-2xl font-bold ${themeColor}`}>Customer Reviews</h3>
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
+                      </div>
+                      <span className="text-sm font-bold text-gray-500">4.9/5 Rating</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-500 font-medium leading-relaxed">
+                  Join hundreds of satisfied homeowners and businesses who trust Sneha Sliding for their premium installations.
+                </p>
+              </div>
+
+              <div className="space-y-6 flex-1 lg:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {filteredTestimonials.length > 0 ? (
+                  filteredTestimonials.map((t) => (
+                    <div key={t.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm ${isAlu ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}`}>
+                            {t.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{t.name}</h4>
+                            <div className="flex text-yellow-400 gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} size={12} className={i < t.rating ? "fill-current" : "text-gray-200"} fill={i < t.rating ? "currentColor" : "none"} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <Quote size={20} className="text-gray-100 group-hover:text-gray-200 transition-colors" />
+                      </div>
+                      <p className="text-gray-600 text-sm italic leading-relaxed">"{t.content}"</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-10 bg-white/50 rounded-3xl border border-dashed border-gray-200">
+                    <p className="text-gray-400 font-medium italic">No reviews yet for this category.<br/>Be the first to share your experience!</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8">
+                <a 
+                  href="#contact" 
+                  className={`inline-flex items-center gap-2 font-bold transition-all ${isAlu ? 'text-blue-600 hover:text-blue-700' : 'text-purple-600 hover:text-purple-700'}`}
+                >
+                  Book Site Visit <ArrowRight size={18} />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
