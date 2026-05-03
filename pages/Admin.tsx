@@ -23,12 +23,12 @@ const Admin: React.FC = () => {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loadingEnquiries, setLoadingEnquiries] = useState(false);
   const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
-  
+
   // Testimonial State
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingTestimonials, setLoadingTestimonials] = useState(false);
   const [testiError, setTestiError] = useState<string | null>(null);
-  
+
   // New Testimonial Form
   const [testiName, setTestiName] = useState('');
   const [testiRating, setTestiRating] = useState(5);

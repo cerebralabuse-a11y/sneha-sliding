@@ -218,8 +218,8 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((s, idx) => {
               return (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   onClick={() => handleServiceClick(s.title)}
                   className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:border-transparent hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full cursor-pointer"
                 >
@@ -287,10 +287,10 @@ const Home: React.FC = () => {
                 <BeforeAfterSlider
                   beforeImage={isAlu
                     ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/Gemini_Generated_Image_yxbf7dyxbf7dyxbf.png"
-                    : "https://images.unsplash.com/photo-1505934524419-f55db4db9a0a?auto=format&fit=crop&q=80&w=800"}
+                    : "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/WhatsApp%20Image%202026-05-03%20at%209.37.54%20PM.jpeg"}
                   afterImage={isAlu
                     ? "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/605106268_1440908621376022_1780417851168379092_n.jpg"
-                    : "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"}
+                    : "https://momqzfnyzhfdyiwtjqis.supabase.co/storage/v1/object/public/gallery-images/WhatsApp%20Image%202026-05-03%20at%209.37.53%20PM.jpeg"}
                   className=""
                 />
                 <div className="mt-6 text-center">
@@ -348,16 +348,16 @@ const Home: React.FC = () => {
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                   <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">Our Workshop</span>
                 </div>
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.570280152452!2d73.015599!3d19.0386482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c3026d3e2dfb%3A0xd45e01acc54369e8!2sSneha%20Sliding%20Aluminum%20Fabrication!5e0!3m2!1sen!2sin!4v1777644100401!5m2!1sen!2sin" 
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.570280152452!2d73.015599!3d19.0386482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c3026d3e2dfb%3A0xd45e01acc54369e8!2sSneha%20Sliding%20Aluminum%20Fabrication!5e0!3m2!1sen!2sin!4v1777644100401!5m2!1sen!2sin"
                   className="w-full h-full rounded-[2rem] border-0"
                   allowFullScreen={true}
-                  loading="lazy" 
+                  loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
-                <a 
-                  href="https://maps.app.goo.gl/ZFSryha38CEY6FT6A" 
-                  target="_blank" 
+                <a
+                  href="https://maps.app.goo.gl/ZFSryha38CEY6FT6A"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="absolute bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-xl flex items-center gap-2 hover:bg-blue-700 transition-all hover:translate-y-[-2px] active:scale-95"
                 >
@@ -414,14 +414,14 @@ const Home: React.FC = () => {
                   ))
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-center p-10 bg-white/50 rounded-3xl border border-dashed border-gray-200">
-                    <p className="text-gray-400 font-medium italic">No reviews yet for this category.<br/>Be the first to share your experience!</p>
+                    <p className="text-gray-400 font-medium italic">No reviews yet for this category.<br />Be the first to share your experience!</p>
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-8">
-                <a 
-                  href="#contact" 
+                <a
+                  href="#contact"
                   className={`inline-flex items-center gap-2 font-bold transition-all ${isAlu ? 'text-blue-600 hover:text-blue-700' : 'text-purple-600 hover:text-purple-700'}`}
                 >
                   Book Site Visit <ArrowRight size={18} />
